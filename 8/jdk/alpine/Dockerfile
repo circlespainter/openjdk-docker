@@ -1,0 +1,1 @@
+Dockerfile.openj9.releases.slim

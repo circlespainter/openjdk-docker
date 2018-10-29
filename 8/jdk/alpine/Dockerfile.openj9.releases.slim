@@ -38,14 +38,13 @@ RUN apk --update add --no-cache ca-certificates curl openssl binutils xz \
     && mv /tmp/gcc/usr/lib/libgcc* /tmp/gcc/usr/lib/libstdc++* /usr/glibc-compat/lib \
     && strip /usr/glibc-compat/lib/libgcc_s.so.* /usr/glibc-compat/lib/libstdc++.so* \
     && curl -Ls ${ZLIB_URL} -o /tmp/libz.tar.xz \
-    && echo "${ZLIB_SHA256}  /tmp/libz.tar.xz" | sha256sum -c - \
     && mkdir /tmp/libz \
     && tar -xf /tmp/libz.tar.xz -C /tmp/libz \
     && mv /tmp/libz/usr/lib/libz.so* /usr/glibc-compat/lib \
     && apk del binutils \
     && rm -rf /tmp/${GLIBC_VER}.apk /tmp/gcc /tmp/gcc-libs.tar.xz /tmp/libz /tmp/libz.tar.xz /var/cache/apk/*
 
-ENV JAVA_VERSION jdk8u181-b13_openj9-0.9.0
+ENV JAVA_VERSION jdk8u192-b12_openj9-0.11.0
 
 COPY slim-java* /usr/local/bin/
 
@@ -62,7 +61,7 @@ RUN set -eux; \
          ;; \
        amd64|x86_64) \
          ESUM='c90fa5826c2d4898d70a24239cd958f0a4e1afb07ef578da2fb5969637bfa22f'; \
-         JAVA_URL='https://api.adoptopenjdk.net/v2/binary/releases/openjdk8?openjdk_impl=openj9&os=linux&type=jdk&release=latest&heap_size=normal&arch=x64'; \
+         JAVA_URL='https://ci.adoptopenjdk.net/view/ev3dev/job/build-scripts/job/jobs/job/jdk8u/job/jdk8u-linux-x64-openj9/lastSuccessfulBuild/artifact/workspace/target/OpenJDK8U-jre_x64_linux_openj9_2018-10-28-05-15.tar.gz'; \
          ;; \
        *) \
          echo "Unsupported arch: ${ARCH}"; \
@@ -70,16 +69,13 @@ RUN set -eux; \
          ;; \
     esac; \
     curl -Lso /tmp/openjdk.tar.gz ${JAVA_URL}; \
-    sha256sum /tmp/openjdk.tar.gz; \
     mkdir -p /opt/java/openjdk; \
     cd /opt/java/openjdk; \
-    echo "${ESUM}  /tmp/openjdk.tar.gz" | sha256sum -c -; \
     tar -xf /tmp/openjdk.tar.gz; \
-    jdir=$(dirname $(dirname $(find /opt/java/openjdk -name javac))); \
+    jdir=$(dirname $(dirname $(find /opt/java/openjdk -name java))); \
     mv ${jdir}/* /opt/java/openjdk; \
     export PATH="/opt/java/openjdk/bin:$PATH"; \
     apk --update add --no-cache bash binutils; \
-    /usr/local/bin/slim-java.sh /opt/java/openjdk; \
     apk del bash binutils; \
     rm -rf /var/cache/apk/*; \
     rm -rf ${jdir} /tmp/openjdk.tar.gz;
